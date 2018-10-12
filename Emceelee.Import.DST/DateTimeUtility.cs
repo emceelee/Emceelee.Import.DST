@@ -21,8 +21,7 @@ namespace Emceelee.Import.DST
                 //DateTime.Kind must be Unspecified to convert to a specified Timezone
                 importTime = DateTime.SpecifyKind(importTime, DateTimeKind.Unspecified);
             }
-
-            int dstAdjustment = 0;
+            
             //If time provided hasn't already been adjusted for DST
             if(importTimeZone.SupportsDaylightSavingTime)
             {
@@ -40,8 +39,6 @@ namespace Emceelee.Import.DST
 
                         //TimeZoneInfo.ConvertTimeToUtc will always assume Standard (MST) time instead of DST time
                         //Results in a gap on the 1st hour instead of 2nd
-                        //Apply a 1 hour adjustment to have the 1st hour import instead of 2nd.
-                        dstAdjustment = -1;
                     }
                 }
                 else
@@ -74,7 +71,7 @@ namespace Emceelee.Import.DST
                 }
             }
 
-            var utcTime = TimeZoneInfo.ConvertTimeToUtc(importTime, importTimeZone).AddHours(dstAdjustment);
+            var utcTime = TimeZoneInfo.ConvertTimeToUtc(importTime, importTimeZone);
 
             return utcTime;
         }

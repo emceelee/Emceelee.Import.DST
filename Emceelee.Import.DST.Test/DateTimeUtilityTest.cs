@@ -16,15 +16,15 @@ namespace Emceelee.Import.DST.Test
 
         private static TimeZoneInfo GetUtc()
         {
-            return TimeZoneInfo.FindSystemTimeZoneById("UTC"); ;
+            return TimeZoneInfo.FindSystemTimeZoneById("UTC");
         }
         private static TimeZoneInfo GetMST()
         {
-            return TimeZoneInfo.FindSystemTimeZoneById("Mountain Standard Time"); ;
+            return TimeZoneInfo.FindSystemTimeZoneById("Mountain Standard Time");
         }
         private static TimeZoneInfo GetArizonaMST()
         {
-            return TimeZoneInfo.FindSystemTimeZoneById("US Mountain Standard Time"); ;
+            return TimeZoneInfo.FindSystemTimeZoneById("US Mountain Standard Time");
         }
 
         #region #ToUtc
@@ -104,14 +104,14 @@ namespace Emceelee.Import.DST.Test
         }
 
         [TestMethod]
-        public void ToUtc_FromUnspecified_DST_Corrected_AmbiguousLocal()
+        public void ToUtc_FromUnspecified_NonDST_Corrected_AmbiguousLocal()
         {
             //Specified Time: 1:10:50.003
             //Corrected for DST: true
-            //Currently DST? true
+            //Currently DST? false
             //DST-Corrected Time: 1:10:50.003
-            //Offset: 6
-            //UTC: 7:10:50.003
+            //Offset: 7
+            //UTC: 8:10:50.003
 
             var localDateTime = dateTimeAmbiguous;
             var localTimeZone = GetMST();
@@ -121,7 +121,7 @@ namespace Emceelee.Import.DST.Test
             Assert.AreEqual(2018, result.Year);
             Assert.AreEqual(11, result.Month);
             Assert.AreEqual(4, result.Day);
-            Assert.AreEqual(7, result.Hour);
+            Assert.AreEqual(8, result.Hour);
             Assert.AreEqual(10, result.Minute);
             Assert.AreEqual(50, result.Second);
             Assert.AreEqual(3, result.Millisecond);

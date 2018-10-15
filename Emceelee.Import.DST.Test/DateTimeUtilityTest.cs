@@ -230,6 +230,33 @@ namespace Emceelee.Import.DST.Test
         }
 
         [TestMethod]
+        public void ToUtc_FromUnspecified_DST_NotCorrected_CorrectionBecomesAmbiguous()
+        {
+            //Specified Time: 12:10:50.003
+            //Corrected for DST: false
+            //Currently DST? true
+            //DST-Corrected Time: 13:10:50.003
+            //Offset: 6
+            //UTC: 19:10:50.003
+
+            //EFM reports 00:00, but real local time is 1:00
+            //1:00 is ambiguous
+            var localDateTime = new DateTime(2018, 11, 4, 0, 10, 50, 3, DateTimeKind.Unspecified);
+            var localTimeZone = GetMST();
+
+            var result = localDateTime.ToUtc(localTimeZone, false);
+
+            Assert.AreEqual(2018, result.Year);
+            Assert.AreEqual(11, result.Month);
+            Assert.AreEqual(4, result.Day);
+            Assert.AreEqual(7, result.Hour);
+            Assert.AreEqual(10, result.Minute);
+            Assert.AreEqual(50, result.Second);
+            Assert.AreEqual(3, result.Millisecond);
+            Assert.AreEqual(DateTimeKind.Utc, result.Kind);
+        }
+
+        [TestMethod]
         public void ToUtc_FromUnspecified_NonDST_NotCorrected()
         {
             //Specified Time: 12:10:50.003

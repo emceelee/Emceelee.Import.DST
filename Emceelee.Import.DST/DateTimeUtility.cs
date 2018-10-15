@@ -21,57 +21,34 @@ namespace Emceelee.Import.DST
                 //DateTime.Kind must be Unspecified to convert to a specified Timezone
                 importTime = DateTime.SpecifyKind(importTime, DateTimeKind.Unspecified);
             }
-            
+
+            var offset = importTimeZone.BaseUtcOffset;
+
             //If time provided hasn't already been adjusted for DST
-            if(importTimeZone.SupportsDaylightSavingTime)
+            if(importTimeZone.SupportsDaylightSavingTime && correctedForDst)
             {
-                if (correctedForDst)
+                //if (importTimeZone.IsAmbiguousTime(importTime))
+                //{
+                    //Not enough information to fully resolve this case
+                    //Following example assumes MST.  Base UTC offset (Non-DST) = -7
+
+                    //Import Time   isDst?      Local Time      Utc Time
+                    // 1:30 AM      True        1:30 AM (MDT)   7:30 AM
+                    // 1:30 AM      False       1:30 AM (MST)   8:30 AM
+                    // 2:30 AM      False       2:30 AM (MST)   9:30 AM
+                //}
+
+                //if not invalid datetime (2:30am is valid when DST becomes active)
+                if (!importTimeZone.IsInvalidTime(importTime))
                 {
-                    if (importTimeZone.IsAmbiguousTime(importTime))
+                    if (importTimeZone.IsDaylightSavingTime(importTime))
                     {
-                        //Not enough information to fully resolve this case
-                        //Following example assumes MST.  Base UTC offset (Non-DST) = -7
-
-                        //Import Time   isDst?      Local Time      Utc Time
-                        // 1:30 AM      True        1:30 AM (MDT)   7:30 AM
-                        // 1:30 AM      False       1:30 AM (MST)   8:30 AM
-                        // 2:30 AM      False       2:30 AM (MST)   9:30 AM
-
-                        //TimeZoneInfo.ConvertTimeToUtc will always assume Standard (MST) time instead of DST time
-                        //Results in a gap on the 1st hour instead of 2nd
-                    }
-                }
-                else
-                {
-                    //Determine if the time provided needs to be corrected for DST
-                    bool isDst = false;
-
-                    //if invalid datetime (2:30am is valid when DST becomes active)
-                    if (importTimeZone.IsInvalidTime(importTime))
-                    {
-                        isDst = true;
-                    }
-                    else
-                    {
-                        //Gracefully handles the case when DST becomes inactive, i.e. the ambiguous local time
-                        //Ambiguous time -> isDst = false
-                        //Following example assumes MST.  Base UTC offset (Non-DST) = -7
-
-                        //Import Time   isDst?      Local Time      Utc Time
-                        // 12:30 AM     True        1:30 AM (MDT)   7:30 AM
-                        // 1:30 AM      False       1:30 AM (MST)   8:30 AM
-                        // 2:30 AM      False       2:30 AM (MST)   9:30 AM
-                        isDst = importTimeZone.IsDaylightSavingTime(importTime);
-                    }
-
-                    if (isDst)
-                    {
-                        importTime = importTime.AddHours(1);
+                        offset = offset.Add(new TimeSpan(1, 0, 0));
                     }
                 }
             }
 
-            var utcTime = TimeZoneInfo.ConvertTimeToUtc(importTime, importTimeZone);
+            var utcTime = importTime.Subtract(offset).SpecifyKind(DateTimeKind.Utc);
 
             return utcTime;
         }

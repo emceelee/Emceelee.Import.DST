@@ -65,6 +65,7 @@ namespace Emceelee.DST.GUI
         {
             Data = GetData();
             dataGridView1.DataSource = Data;
+            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
         }
 
         private void DetermineContractData()
@@ -104,7 +105,7 @@ namespace Emceelee.DST.GUI
 
             while (start < end)
             {
-                var entity = new EntityExample(tz)
+                var entity = new EntityExample()
                 {
                     ImportEffectiveDateStart = start,
                     ImportEffectiveDateEnd = start.AddHours(1),
@@ -175,16 +176,15 @@ namespace Emceelee.DST.GUI
                     }
                 }
                 
-                var tzi = entity.GetTimeZoneInfo();
-                var importDateTimeInfo = entity.ImportEffectiveDateStart.ParseImportDateTimeInfo(tzi, ContractHour, IsSourceDataAdjustedDST);
+                var importDateTimeInfo = entity.ImportEffectiveDateStart.ParseImportDateTimeInfo(tz, ContractHour, IsSourceDataAdjustedDST);
 
                 entity.UtcEffectiveDateStart = importDateTimeInfo.DateTimeUtc;
-                entity.UtcEffectiveDateEnd = entity.ImportEffectiveDateEnd.ToUtc(tzi, IsSourceDataAdjustedDST);
+                entity.UtcEffectiveDateEnd = entity.ImportEffectiveDateEnd.ToUtc(tz, IsSourceDataAdjustedDST);
                 entity.ContractHour = importDateTimeInfo.ContractDateTimeInfo.ContractHour;
                 entity.ContractDay = importDateTimeInfo.ContractDateTimeInfo.ContractDay;
                 entity.ContractMonth = importDateTimeInfo.ContractDateTimeInfo.ContractMonth;
-                entity.DisplayEffectiveDateStart = entity.UtcEffectiveDateStart.ToSpecified(tzi);
-                entity.DisplayEffectiveDateEnd = entity.UtcEffectiveDateEnd.ToSpecified(tzi);
+                entity.DisplayEffectiveDateStart = entity.UtcEffectiveDateStart.ToSpecified(tz);
+                entity.DisplayEffectiveDateEnd = entity.UtcEffectiveDateEnd.ToSpecified(tz);
 
                 result.Add(entity);
             }
@@ -194,11 +194,6 @@ namespace Emceelee.DST.GUI
 
         public class EntityExample
         {
-            private TimeZoneInfo _tz;
-            public TimeZoneInfo GetTimeZoneInfo() { return _tz; }
-            
-            public EntityExample(TimeZoneInfo tz) { _tz = tz; }
-
             public DateTime ImportEffectiveDateStart { get; set; }
             public DateTime ImportEffectiveDateEnd { get; set; }
             public DateTime UtcEffectiveDateStart { get; set; }
@@ -208,7 +203,6 @@ namespace Emceelee.DST.GUI
             public int ContractHour { get; set; }
             public DateTime ContractDay { get; set; }
             public DateTime ContractMonth { get; set; }
-            public string TimeZone { get { return _tz.DisplayName; } }
             public Color RowColor { get; set; } = Color.Yellow;
         }
 
